@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "start": "node build/index.js",
-    "dev": "ts-node-dev index.ts",
-    "ling": "eslint --ext .ts .",
+    "start": "node ./build/index.js",
+    "dev": "ts-node-dev ./src/index.ts",
+    "lint": "eslint --ext .ts .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
