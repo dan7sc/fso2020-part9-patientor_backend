@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import crypto from 'crypto';
-import { NewPatientEntry, Gender } from './types';
+import { NewPatientEntry, Gender, Entry } from './types';
 
 const isString = (text: any): text is string => {
     return typeof text === 'string' || text instanceof String;
@@ -56,14 +56,15 @@ const parseOccupation = (occupation: any): string => {
 
 export const toNewPatientEntry = (object: any | undefined): NewPatientEntry => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const { name, dateOfBirth, ssn, gender, occupation } = object;
+    const { name, dateOfBirth, ssn, gender, occupation, entries } = object;
 
     const newEntry: NewPatientEntry = {
         name: parseName(name),
         dateOfBirth: parseDateOfBirth(dateOfBirth),
         ssn: parseSSN(ssn),
         gender: parseGender(gender),
-        occupation: parseOccupation(occupation)
+        occupation: parseOccupation(occupation),
+        entries: entries as Entry[]
     };
 
     return newEntry;
