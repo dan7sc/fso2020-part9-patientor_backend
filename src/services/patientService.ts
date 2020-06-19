@@ -2,19 +2,19 @@ import patients from '../../data/patients';
 import { generateUUID } from '../utils';
 
 import {
-    PatientEntry, NewPatientEntry, NonSensitivePatientEntry
+    Patient, NewPatient, PublicPatient
 } from '../types';
 
-const getEntries = (): Array<PatientEntry> => {
+const getEntries = (): Array<Patient> => {
     return patients;
 };
 
-const findById = (id: string): PatientEntry | undefined => {
+const findById = (id: string): Patient | undefined => {
     const entry = patients.find(patient => patient.id === id);
     return entry;
 };
 
-const getNonSensitiveEntries = (): Array<NonSensitivePatientEntry> => {
+const getPublicEntries = (): Array<PublicPatient> => {
     return patients.map(({ id, name, dateOfBirth, gender, occupation, entries }) => ({
         id,
         name,
@@ -25,19 +25,19 @@ const getNonSensitiveEntries = (): Array<NonSensitivePatientEntry> => {
     }));
 };
 
-const addEntry = (entry: NewPatientEntry): PatientEntry => {
-    const newPatientEntry = {
+const addEntry = (entry: NewPatient): Patient => {
+    const newPatient = {
         id: generateUUID(),
         ...entry
     };
 
-    patients.push(newPatientEntry);
-    return newPatientEntry;
+    patients.push(newPatient);
+    return newPatient;
 };
 
 export default {
     getEntries,
-    getNonSensitiveEntries,
+    getPublicEntries,
     findById,
     addEntry
 };

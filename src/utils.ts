@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import crypto from 'crypto';
-import { NewPatientEntry, Gender, Entry } from './types';
+import { NewPatient, Gender, Entry } from './types';
 
 const isString = (text: any): text is string => {
     return typeof text === 'string' || text instanceof String;
@@ -40,7 +40,7 @@ const parseSSN = (ssn: any): string => {
     return ssn;
 };
 
-const parseGender = (gender: any): string => {
+const parseGender = (gender: any): Gender => {
     if (!gender || !isString(gender) || !isGender(gender)) {
         throw new Error('Incorrect or missing gender');
     }
@@ -54,11 +54,11 @@ const parseOccupation = (occupation: any): string => {
     return occupation;
 };
 
-export const toNewPatientEntry = (object: any | undefined): NewPatientEntry => {
+export const toNewPatientEntry = (object: any | undefined): NewPatient => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { name, dateOfBirth, ssn, gender, occupation, entries } = object;
 
-    const newEntry: NewPatientEntry = {
+    const newEntry: NewPatient = {
         name: parseName(name),
         dateOfBirth: parseDateOfBirth(dateOfBirth),
         ssn: parseSSN(ssn),
@@ -71,11 +71,12 @@ export const toNewPatientEntry = (object: any | undefined): NewPatientEntry => {
 };
 
 export const generateUUID = (): string => {
-    const uuid1: string = crypto.randomBytes(4).toString("hex");
-    const uuid2: string = crypto.randomBytes(2).toString("hex");
-    const uuid3: string = crypto.randomBytes(2).toString("hex");
-    const uuid4: string = crypto.randomBytes(2).toString("hex");
-    const uuid5: string = crypto.randomBytes(6).toString("hex");
+  const uuid: string[] = [];
+  const byteSizes: number[] = [4, 2, 2, 2, 6];
 
-    return uuid1 + '-' + uuid2 + '-' + uuid3 + '-' + uuid4 + '-' + uuid5;
+  byteSizes.map(size => (
+    uuid.push(crypto.randomBytes(size).toString("hex"))
+  ));
+
+  return uuid.join('-');
 };
