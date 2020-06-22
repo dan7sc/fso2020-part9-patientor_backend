@@ -11,12 +11,12 @@ export enum HealthCheckRating {
   'CriticalRisk' = 3
 }
 
-interface Discharge {
+export interface Discharge {
   date: string;
   criteria: string;
 }
 
-interface SickLeave {
+export interface SickLeave {
   startDate: string;
   endDate: string;
 }
@@ -50,7 +50,6 @@ export type Entry =
   | OccupationalHealthcareEntry
   | HealthCheckEntry;
 
-
 export interface Patient {
     id: string;
     name: string;
@@ -64,6 +63,8 @@ export interface Patient {
 export type PublicPatient = Omit<Patient, 'ssn' | 'entries'>;
 
 export type NewPatient  = Omit<Patient, 'id'>;
+
+export type NewEntry  = Omit<Entry, 'id'>;
 
 export enum Gender {
     Female = 'female',
