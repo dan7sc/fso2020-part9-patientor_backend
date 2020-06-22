@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import crypto from 'crypto';
 import {
-  NewPatient, Gender, Discharge, SickLeave, HealthCheckRating, Entry, NewEntry,
+  NewPatient, Gender, Discharge, SickLeave, HealthCheckRating,
+  Entry, NewEntry, NewHospitalEntry, NewOccupationalHealthcareEntry, NewHealthCheckEntry
 } from './types';
 
 const isString = (text: any): text is string => {
@@ -29,11 +30,11 @@ const isArrayOfStrings = (param: any[]): param is string[] => {
 
 const isDischarge = (param: any): param is Discharge => {
   return Object.keys(param).includes('date') && Object.keys(param).includes('criteria');
-}
+};
 
 const isSickLeave = (param: any): param is SickLeave => {
   return Object.keys(param).includes('startDate') && Object.keys(param).includes('endDate');
-}
+};
 
 const isHealthCheckRating = (param: any): param is HealthCheckRating => {
   return Object.values(HealthCheckRating).includes(param);
@@ -52,9 +53,9 @@ const isHealthCheckRating = (param: any): param is HealthCheckRating => {
 //   return param === 'OccupationalHealthcare';
 // };
 
-const isType = (param: any): param is 'Hospital' | 'HealthCheck' | 'OccupationalHealthcare' => {
-  return param === 'Hospital' || param === 'HealthCheck' || param === 'OccupationalHealthcare';
-}
+// const isType = (param: any): param is 'Hospital' | 'HealthCheck' | 'OccupationalHealthcare' => {
+//   return param === 'Hospital' || param === 'HealthCheck' || param === 'OccupationalHealthcare';
+// };
 
 const parseName = (name: any): string => {
     if (!name || !isString(name)) {
@@ -120,16 +121,32 @@ const parseDiagnosisCodes = (diagnosisCodes: any): string[] => {
 };
 
 const parseDischarge = (discharge: any): Discharge => {
-  if (!discharge || !isDischarge(discharge || !isDate(discharge.date) || !isString(discharge.criteria))) {
+  if (!discharge || !isDischarge(discharge)) {
     throw new Error('Incorrect or missing discharge');
   }
+
+  const { date, criteria } = discharge;
+  if (!isDate(date) || !isString(criteria)) {
+    throw new Error('Incorret or missing date or criteria in discharge');
+  }
+
   return discharge;
 };
 
 const parseSickLeave = (sickLeave: any): SickLeave => {
-  if (!sickLeave || !isSickLeave(sickLeave || !isDate(sickLeave.startDate) || !isDate(sickLeave.endDate))) {
+  // if (!sickLeave || !isSickLeave(sickLeave) || !isDate(sickLeave.startDate) || !isDate(sickLeave.endDate)) {
+  //   throw new Error('Incorrect or missing sickLeave');
+  // }
+
+  if (!sickLeave || !isSickLeave(sickLeave)) {
     throw new Error('Incorrect or missing sickLeave');
   }
+
+  const { startDate, endDate } = sickLeave;
+  if (!isDate(startDate) || !isDate(endDate)) {
+    throw new Error('Incorrect or missing startDate or endDate in sickLeave');
+  }
+
   return sickLeave;
 };
 
@@ -163,12 +180,22 @@ const parseHealthCheckRating = (healthCheckRating: any): HealthCheckRating => {
 // };
 
 
-const parseType = (type: any): 'Hospital' | 'HealthCheck' | 'OccupationalHealthcare' => {
-  if (!isType(type)) {
-    throw new Error('Incorret or missing type:');
-  }
-  return type;
-};
+// const parseType = (type: any): 'Hospital' | 'HealthCheck' | 'OccupationalHealthcare' => {
+//   if (!isType(type)) {
+//     throw new Error('Incorret or missing type:');
+//   }
+//   return type;
+// };
+
+// const parseHospital = (values: any): HospitalEntry => {
+//   const { discharge } = values;
+
+//   const returnedValues = {
+//     discharge: parseDischarge(discharge)
+//   };
+
+//   return returnedValues;
+// }
 
 // const parseEntryValues = (object: any | undefined): Entry => {
 //   const { type, description, date, specialist, diagnosisCodes, ...otherValues } = object;
@@ -179,6 +206,12 @@ const parseType = (type: any): 'Hospital' | 'HealthCheck' | 'OccupationalHealthc
 //     }
 //   }
 // }
+
+export const assertNever = (value: any | never): never => {
+  throw new Error(
+    `Unhandled discriminated union member: ${JSON.stringify(value)}`
+  );
+};
 
 export const toNewPatient = (object: any | undefined): NewPatient => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -199,53 +232,122 @@ export const toNewPatient = (object: any | undefined): NewPatient => {
 export const toNewPatientEntry = (object: any | undefined): NewEntry => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { type, description, date, specialist, diagnosisCodes, ...otherValues } = object;
-  let newPatientEntry: NewEntry;
 
   switch(type) {
     case 'Hospital':
+      console.log('hospital');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { discharge } = otherValues;
 
-      newPatientEntry = {
-        type: parseType(type),
+      // otherValues.discharge = parseDischarge(otherValues.discharge);
+      const newPatientEntry1: NewHospitalEntry = {
+        type: 'Hospital',
         description: parseDescription(description),
         date: parseDate(date),
         specialist: parseSpecialist(specialist),
         diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
-        // discharge: parseDischarge(discharge)
+        discharge: parseDischarge(discharge)
+        // ...otherValues
       };
-
-      break;
-    case 'HealthCheck':
-      const { healthCheckRating } = otherValues;
-
-      newPatientEntry = {
-        type: parseType(type),
-        description: parseDescription(description),
-        date: parseDate(date),
-        specialist: parseSpecialist(specialist),
-        diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
-        // healthCheckRating: parseHealthCheckRating(healthCheckRating)
-      };
-
-      break;
+      return newPatientEntry1;
     case 'OccupationalHealthcare':
+      console.log('occupational');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { employerName, sickLeave } = otherValues;
 
-      newPatientEntry = {
-        type: parseType(type),
+      // otherValues.employerName = parseName(otherValues.employerName),
+      // otherValues.sickLeave = parseSickLeave(otherValues.sickLeave)
+      const newPatientEntry2: NewOccupationalHealthcareEntry = {
+        type: 'OccupationalHealthcare',
         description: parseDescription(description),
         date: parseDate(date),
         specialist: parseSpecialist(specialist),
         diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
-        // employerName: parseName(employerName),
-        // sickLeave: parseSickLeave(sickLeave)
+        employerName: parseName(employerName),
+        sickLeave: parseSickLeave(sickLeave)
+        // ...otherValues
       };
+      return newPatientEntry2;
+    case 'HealthCheck':
+      console.log('healthcheck');
+      // otherValues.healthCheckRating = parseHealthCheckRating(otherValues.healthCheckRating)
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const { healthCheckRating } = otherValues;
+      // const healthCheckRating = parseHealthCheckRating(otherValues);
 
-      break;
+      const newPatientEntry3: NewHealthCheckEntry = {
+        // type: parseType(type),
+        type: 'HealthCheck',
+        description: parseDescription(description),
+        date: parseDate(date),
+        specialist: parseSpecialist(specialist),
+        diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+        healthCheckRating: parseHealthCheckRating(healthCheckRating)
+        // ...otherValues
+      };
+      return newPatientEntry3;
     default:
-      throw new Error('Error: invalid entry');
+      return assertNever({ ...object });
   }
-  return newPatientEntry;
+
+  // const newPatientEntry: NewEntry = {
+  //   type: parseType(type),
+  //   description: parseDescription(description),
+  //   date: parseDate(date),
+  //   specialist: parseSpecialist(specialist),
+  //   diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+  //   ...otherValues
+  // };
+
+  // return newPatientEntry;
+
+  // let newPatientEntry: NewEntry;
+
+  // switch(type) {
+  //   case 'Hospital':
+  //     const { discharge } = otherValues;
+
+  //     newPatientEntry = {
+  //       type: parseType(type),
+  //       description: parseDescription(description),
+  //       date: parseDate(date),
+  //       specialist: parseSpecialist(specialist),
+  //       diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+  //       discharge: parseDischarge(discharge)
+  //     };
+
+  //     break;
+  //   case 'HealthCheck':
+  //     const { healthCheckRating } = otherValues;
+
+  //     newPatientEntry = {
+  //       type: parseType(type),
+  //       description: parseDescription(description),
+  //       date: parseDate(date),
+  //       specialist: parseSpecialist(specialist),
+  //       diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+  //       healthCheckRating: parseHealthCheckRating(healthCheckRating)
+  //     };
+
+  //     break;
+  //   case 'OccupationalHealthcare':
+  //     const { employerName, sickLeave } = otherValues;
+
+  //     newPatientEntry = {
+  //       type: parseType(type),
+  //       description: parseDescription(description),
+  //       date: parseDate(date),
+  //       specialist: parseSpecialist(specialist),
+  //       diagnosisCodes: parseDiagnosisCodes(diagnosisCodes),
+  //       employerName: parseName(employerName),
+  //       sickLeave: parseSickLeave(sickLeave)
+  //     };
+
+  //     break;
+  //   default:
+  //     throw new Error('Error: invalid entry');
+  // }
+  // return newPatientEntry;
 };
 
 export const generateUUID = (): string => {

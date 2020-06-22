@@ -31,12 +31,10 @@ router.post('/:id/entries', (req, res) => {
 
   if (patient) {
     const newPatientEntry = toNewPatientEntry(req.body);
-    console.log(newPatientEntry);
 
     const addedPatientEntry = patientService.addPatientEntry(patient, newPatientEntry);
 
     res.json(addedPatientEntry);
-    // res.json(newPatientEntry);
   } else {
     res.sendStatus(404);
   }
