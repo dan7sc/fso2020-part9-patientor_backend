@@ -5,60 +5,58 @@ import {
   Patient, NewPatient, PublicPatient, Entry, NewEntry
 } from '../types';
 
-let patientList: Patient[] = [...patients];
-
 const getPatientList = (): Array<Patient> => {
-    return patientList;
+  return patients;
 };
 
 const findPatientById = (id: string): Patient | undefined => {
-    const entry = patientList.find(patient => patient.id === id);
-    return entry;
+  const entry = patients.find(patient => patient.id === id);
+  return entry;
 };
 
 const getPublicPatientList = (): Array<PublicPatient> => {
-    return patientList.map(({ id, name, dateOfBirth, gender, occupation, entries }) => ({
-        id,
-        name,
-        dateOfBirth,
-        gender,
-        occupation,
-        entries
-    }));
+  return patients.map(({ id, name, dateOfBirth, gender, occupation, entries }) => ({
+    id,
+    name,
+    dateOfBirth,
+    gender,
+    occupation,
+    entries
+  }));
 };
 
 const addPatient = (patient: NewPatient): Patient => {
-    const newPatient = {
-        id: generateUUID(),
-        ...patient
-    };
+  const newPatient = {
+    id: generateUUID(),
+    ...patient
+  };
 
-    patientList.push(newPatient);
-    return newPatient;
+  patients.push(newPatient);
+  return newPatient;
 };
 
-const addPatientEntry = (patient: Patient, entry: NewEntry): NewEntry => {
-    const newPatientEntry = {
-        id: generateUUID(),
-            ...entry
-        };
+const addPatientEntry = (patient: Patient, entry: NewEntry): Patient => {
+  const newPatientEntry = {
+    id: generateUUID(),
+    ...entry
+  } as Entry;
 
-    const updatedPatient = {
-        ...patient,
-        entries: patient.entries.concat(newPatientEntry as Entry)
-    };
+  const updatedPatient = {
+    ...patient,
+    entries: patient.entries.concat(newPatientEntry)
+  };
 
-    patientList = patientList.map(patient => (
-        patient.id === updatedPatient.id ? updatedPatient : patient
-    ));
+  patients.map(element => (
+    element.id === updatedPatient.id ? element.entries.push(newPatientEntry) : element
+  ));
 
-    return newPatientEntry;
+  return updatedPatient;
 };
 
 export default {
-    getPatientList,
-    getPublicPatientList,
-    findPatientById,
-    addPatient,
-    addPatientEntry
+  getPatientList,
+  getPublicPatientList,
+  findPatientById,
+  addPatient,
+  addPatientEntry
 };

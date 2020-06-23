@@ -1,7 +1,7 @@
 export interface Diagnosis {
-    code: string;
-    name: string;
-    latin?: string;
+  code: string;
+  name: string;
+  latin?: string;
 }
 
 export enum HealthCheckRating {
@@ -51,29 +51,30 @@ export type Entry =
   | HealthCheckEntry;
 
 export interface Patient {
-    id: string;
-    name: string;
-    dateOfBirth: string;
-    ssn: string;
-    gender: Gender;
-    occupation: string;
-    entries: Entry[];
+  id: string;
+  name: string;
+  dateOfBirth: string;
+  ssn: string;
+  gender: Gender;
+  occupation: string;
+  entries: Entry[];
 }
 
 export type PublicPatient = Omit<Patient, 'ssn' | 'entries'>;
 
 export type NewPatient  = Omit<Patient, 'id'>;
 
-export type NewEntry  = Omit<Entry, 'id'>;
+export type NewBaseEntry  = Omit<BaseEntry, 'id'>;
 
-export type NewHospitalEntry  = Omit<HospitalEntry, 'id'>;
+// export type NewEntry  = Omit<Entry, 'id'>;
 
-export type NewOccupationalHealthcareEntry  = Omit<OccupationalHealthcareEntry, 'id'>;
-
-export type NewHealthCheckEntry  = Omit<HealthCheckEntry, 'id'>;
+export type NewEntry  =
+  | Omit<HospitalEntry, 'id'>
+  | Omit<OccupationalHealthcareEntry, 'id'>
+  | Omit<HealthCheckEntry, 'id'>;
 
 export enum Gender {
-    Female = 'female',
-    Male = 'male',
-    Other = 'other'
+  Female = 'female',
+  Male = 'male',
+  Other = 'other'
 }
