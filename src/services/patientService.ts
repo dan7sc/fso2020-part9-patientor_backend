@@ -2,7 +2,7 @@ import patients from '../../data/patients';
 import { generateUUID } from '../utils';
 
 import {
-  Patient, NewPatient, PublicPatient, Entry, NewEntry
+  Patient, NewPatient, PublicPatient, NewEntry
 } from '../types';
 
 const getPatientList = (): Array<Patient> => {
@@ -39,15 +39,15 @@ const addPatientEntry = (patient: Patient, entry: NewEntry): Patient => {
   const newPatientEntry = {
     id: generateUUID(),
     ...entry
-  } as Entry;
+  };
 
-  const updatedPatient = {
+  const updatedPatient: Patient = {
     ...patient,
     entries: patient.entries.concat(newPatientEntry)
   };
 
   patients.map(element => (
-    element.id === updatedPatient.id ? element.entries.push(newPatientEntry) : element
+    element.id === patient.id ? element.entries.push(newPatientEntry) : element
   ));
 
   return updatedPatient;
