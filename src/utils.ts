@@ -2,7 +2,8 @@
 import crypto from 'crypto';
 import {
   NewPatient, Gender, Discharge, SickLeave, HealthCheckRating,
-  Entry, NewEntry, NewBaseEntry, OccupationalHealthcareEntry
+  Entry, NewEntry, NewBaseEntry, NewOccupationalHealthcareEntry,
+  NewHospitalEntry, NewHealthCheckEntry, EntryType,
 } from './types';
 
 const isString = (text: any): text is string => {
@@ -28,16 +29,8 @@ const isArrayOfStrings = (param: any[]): param is string[] => {
   );
 };
 
-const isHospitalType = (param: any): param is 'Hospital' => {
-  return param === 'Hospital';
-};
-
-const isOccupationalHealthcareType = (param: any): param is 'OccupationalHealthcare' => {
-  return param === 'OccupationalHealthcare';
-};
-
-const isHealthCheckType = (param: any): param is 'HealthCheck' => {
-  return param === 'HealthCheck';
+const isEntryType = (param: any): param is EntryType => {
+  return Object.values(EntryType).includes(param);
 };
 
 const isDischarge = (param: any): param is Discharge => {
@@ -54,7 +47,7 @@ const isHealthCheckRating = (param: any): param is HealthCheckRating => {
 
 const parseName = (name: any): string => {
   if (!name || !isString(name)) {
-    throw new Error('Incorrect or missing name:');
+    throw new Error('Incorrect or missing name');
   }
   return name;
 };
@@ -89,21 +82,21 @@ const parseOccupation = (occupation: any): string => {
 
 const parseDescription = (description: any): string => {
   if (!description || !isString(description)) {
-    throw new Error('Incorrect or missing description:');
+    throw new Error('Incorrect or missing description');
   }
   return description;
 };
 
 const parseSpecialist = (specialist: any): string => {
   if (!specialist || !isString(specialist)) {
-    throw new Error('Incorrect or missing specialist:');
+    throw new Error('Incorrect or missing specialist');
   }
   return specialist;
 };
 
 const parseDiagnosisCodes = (diagnosisCodes: any): string[] => {
   if (!Array.isArray(diagnosisCodes) || !isArrayOfStrings(diagnosisCodes)) {
-    throw new Error('Incorrect or missing diagnosisCodes:');
+    throw new Error('Incorrect or missing diagnosis codes');
   }
   return diagnosisCodes;
 };
@@ -112,54 +105,42 @@ const parseDischarge = (discharge: any): Discharge => {
   if (!discharge || !isDischarge(discharge)) {
     throw new Error('Incorrect or missing discharge');
   }
-
   const { date, criteria } = discharge;
-  if (!isDate(date) || !isString(criteria)) {
-    throw new Error('Incorret or missing date or criteria in discharge');
+  if (!isDate(date)) {
+    throw new Error('Incorret or missing date');
   }
-
+  if (!isString(criteria)) {
+    throw new Error('ncorret or missing criteria');
+  }
   return discharge;
 };
 
 const parseSickLeave = (sickLeave: any): SickLeave => {
   if (!sickLeave || !isSickLeave(sickLeave)) {
-    throw new Error('Incorrect or missing sickLeave');
+    throw new Error('Incorrect or missing sick leave');
   }
-
   const { startDate, endDate } = sickLeave;
-  if (!isDate(startDate) || !isDate(endDate)) {
-    throw new Error('Incorrect or missing startDate or endDate in sickLeave');
+  if (!isDate(startDate)) {
+    throw new Error('Incorrect or missing start date');
   }
-
+  if (!isDate(endDate)) {
+    throw new Error('Incorrect or missing end date');
+  }
   return sickLeave;
 };
 
 const parseHealthCheckRating = (healthCheckRating: any): HealthCheckRating => {
-  if (!healthCheckRating || !isHealthCheckRating(healthCheckRating)) {
-    throw new Error('Incorrect or missing healthCheckRating');
+  if ((!healthCheckRating && healthCheckRating !== 0) || !isHealthCheckRating(healthCheckRating)) {
+    throw new Error('Incorrect or missing health check rating');
   }
   return healthCheckRating;
 };
 
-const parseHospitalType = (hospitalType: any): 'Hospital' => {
-  if (!hospitalType || !isHospitalType(hospitalType)) {
+const parseEntryType = (entryType: any): EntryType => {
+  if (!entryType || !isString(entryType) || !isEntryType(entryType)) {
     throw new Error('Incorrect or missing type');
   }
-  return hospitalType;
-};
-
-const parseOccupationalHealthcareType = (occupationalHealthcareType: any): 'OccupationalHealthcare' => {
-  if (!occupationalHealthcareType || !isOccupationalHealthcareType(occupationalHealthcareType)) {
-    throw new Error('Incorrect or missing type');
-  }
-  return occupationalHealthcareType;
-};
-
-const parseHealthCheckType = (healthCheckType: any): 'HealthCheck' => {
-  if (!healthCheckType || !isHealthCheckType(healthCheckType)) {
-    throw new Error('Incorrect or missing type');
-  }
-  return healthCheckType;
+  return entryType;
 };
 
 const assertNever = (value: any | never): never => {
@@ -198,39 +179,41 @@ export const toNewPatientEntry = (object: any | undefined): NewEntry => {
     newPatientBaseEntry.diagnosisCodes = parseDiagnosisCodes(diagnosisCodes);
   }
 
-  switch(type) {
-    case 'Hospital':
+  const entryType = parseEntryType(type);
+
+  switch(entryType) {
+    case EntryType.Hospital:
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { discharge } = otherValues;
 
-      const hospitalEntry = {
-        type: parseHospitalType(type),
+      const hospitalEntry: NewHospitalEntry = {
+        type: entryType,
         ...newPatientBaseEntry,
         discharge: parseDischarge(discharge)
       };
 
       return hospitalEntry;
-    case 'OccupationalHealthcare':
+    case EntryType.OccupationalHealthcare:
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { employerName, sickLeave } = otherValues;
 
-      const occupationalHealthcareEntry = {
-        type: parseOccupationalHealthcareType(type),
+      const occupationalHealthcareEntry: NewOccupationalHealthcareEntry = {
+        type: entryType,
         ...newPatientBaseEntry,
         employerName: parseName(employerName),
-      } as OccupationalHealthcareEntry;
+      };
 
       if (sickLeave) {
         occupationalHealthcareEntry.sickLeave = parseSickLeave(sickLeave);
       }
 
       return occupationalHealthcareEntry;
-    case 'HealthCheck':
+    case EntryType.HealthCheck:
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const { healthCheckRating } = otherValues;
 
-      const healthCheckEntry = {
-        type: parseHealthCheckType(type),
+      const healthCheckEntry: NewHealthCheckEntry = {
+        type: entryType,
         ...newPatientBaseEntry,
         healthCheckRating: parseHealthCheckRating(healthCheckRating)
       };
