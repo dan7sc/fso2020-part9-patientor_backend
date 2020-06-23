@@ -2,9 +2,9 @@ import diagnosis from '../../data/diagnoses';
 import { Diagnosis } from '../types';
 
 const getEntries = (): Array<Diagnosis> => {
-    return diagnosis;
+  return diagnosis;
 };
 
 export default {
-    getEntries
+  getEntries
 };
