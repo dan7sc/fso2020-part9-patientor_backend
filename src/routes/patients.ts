@@ -19,24 +19,35 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const newPatient = toNewPatient(req.body);
+  try {
+    const newPatient = toNewPatient(req.body);
 
-  const addedPatient = patientService.addPatient(newPatient);
+    const addedPatient = patientService.addPatient(newPatient);
 
-  res.json(addedPatient);
+    res.json(addedPatient);
+  } catch(error) {
+    const { message } = error as Error;
+    res.status(404).json({ error: message });
+  }
 });
 
 router.post('/:id/entries', (req, res) => {
   const patient = patientService.findPatientById(req.params.id);
 
   if (patient) {
-    const newPatientEntry = toNewPatientEntry(req.body);
+    try {
+      const newPatientEntry = toNewPatientEntry(req.body);
 
-    const updatedPatient = patientService.addPatientEntry(patient, newPatientEntry);
+      const updatedPatient = patientService.addPatientEntry(patient, newPatientEntry);
 
-    res.json(updatedPatient);
+      res.json(updatedPatient);
+    } catch(error) {
+      const { message } = error as Error;
+      res.status(404).json({ error: message });
+    }
   } else {
-    res.sendStatus(404);
+    const error = 'Patient doesn\'t exist';
+    res.status(404).json({ error });
   }
 });
 
